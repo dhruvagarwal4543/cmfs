@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "189865872427",
+    "project_id": "cfms-bmu-app",
+    "storage_bucket": "cfms-bmu-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:189865872427:android:fd585aca22e80a18406e6e",
+        "android_client_info": {
+          "package_name": "com.bmu.cfms"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAHzE0D-HnD-N3xog0RLrZx6rxVq1u4ndk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
