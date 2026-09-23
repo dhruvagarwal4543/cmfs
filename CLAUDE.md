@@ -34,9 +34,11 @@ based on the role stored on the user's record.
 
 - **Frontend:** Flutter, single codebase for mobile (Android/iOS) and web.
 - **Backend / data:** Firebase — Authentication, Firestore, Storage.
-- **Auth:** Email/password + Google Sign-In. Google only proves identity; role
-  always comes from the Firestore user record. No self-signup — a Google
-  account whose email isn't already a registered user is denied.
+- **Auth:** Email/password + Google Sign-In, restricted to the `@bmu.edu.in`
+  domain (see Phase 2 for exact enforcement — confirm this is the real
+  domain). Google only proves identity; role always comes from the Firestore
+  user record. No self-signup — a Google account whose email isn't already a
+  registered user is denied.
 - **Word generation:** a **separate Python service** (FastAPI, deployed on
   Cloud Run) using `python-docx` + `docxcompose`, NOT a Firebase Cloud
   Function in JS — document merging is painful in JS and deserves its own
@@ -83,7 +85,7 @@ Success:          #4F9E74     Warning: #C79A45     Error: #B8635C
   success-green gradients so they read as one family. Admin's dense list
   screens intentionally get no stickers.
 - **Reference mockups exist for every screen** — 32 self-contained HTML files
-  in `reference_screens/` (see its `README.md` for the full list,
+  in `design/reference_screens/` (see its `README.md` for the full list,
   numbered to match this document's phase order, e.g.
   `08-faculty-course-detail-upload-checklist.html`). Before building any
   screen's UI, open the matching file and match its exact colours, spacing
@@ -178,6 +180,23 @@ and what to check, and wait before starting the next one.
 
 ### Phase 2 — Authentication
 - Firebase email/password + Google Sign-In.
+- **Restricted to the university domain, `@bmu.edu.in`, in both directions —
+  confirm this is the real domain before building, it's a placeholder based
+  on the reference mockups.**
+  - Google Sign-In: pass the hosted-domain hint (`hd: "bmu.edu.in"`) to
+    `GoogleAuthProvider` so the account picker itself is filtered to that
+    Google Workspace domain. This is a UX nicety only — **it is not a
+    security boundary**, so also check `user.email` ends with
+    `@bmu.edu.in` after sign-in completes; if it doesn't, sign the user back
+    out immediately and show "Please sign in with your BMU email
+    (@bmu.edu.in)" rather than leaving them signed in.
+  - Email/password: since there is no self-signup (accounts are created by
+    Administrator in Phase 11 — Manage Users), enforce the domain at
+    creation time there — reject "Add Faculty" if the email isn't
+    `@bmu.edu.in`, rather than relying on login-time checks alone.
+  - Either way, the deeper rule from below still applies and is the real
+    gate: an email passing the domain check but with no matching
+    `users/{uid}` record is still denied.
 - Login screen shows a Faculty/Administrator segmented control — **this is
   cosmetic only** (it changes the subtitle text to set expectations). It must
   never be the source of truth for role or access. After a successful login,
