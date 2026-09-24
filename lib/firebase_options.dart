@@ -62,13 +62,13 @@ class DefaultFirebaseOptions {
     projectId: 'cfms-bmu-app',
     storageBucket: 'cfms-bmu-app.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyBHB49xN0WJHGQwwkw91Vbf3CLNZBnsBDs',
     appId: '1:189865872427:ios:fafed89e4dc4e8b3406e6e',
     messagingSenderId: '189865872427',
     projectId: 'cfms-bmu-app',
     storageBucket: 'cfms-bmu-app.firebasestorage.app',
+    iosClientId: '189865872427-en5hvt8npshkcco2ul22e1ln45id9g1k.apps.googleusercontent.com',
     iosBundleId: 'com.bmu.cfms',
   );
 }

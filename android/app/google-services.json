@@ -12,7 +12,12 @@
           "package_name": "com.bmu.cfms"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "189865872427-8irgcabajju14udn4bq2s38ovajrvhv7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAHzE0D-HnD-N3xog0RLrZx6rxVq1u4ndk"
@@ -20,7 +25,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "189865872427-8irgcabajju14udn4bq2s38ovajrvhv7.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "189865872427-en5hvt8npshkcco2ul22e1ln45id9g1k.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.bmu.cfms"
+              }
+            }
+          ]
         }
       }
     }

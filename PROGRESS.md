@@ -42,4 +42,60 @@ dependency.
 
 ---
 
-## Phase 2 — Authentication: not started
+## Phase 2 — Authentication (2026-09-24)
+
+`lib/auth/auth_service.dart`: email/password sign-in, Google sign-in
+restricted to @bmu.edu.in (web uses Firebase's `signInWithPopup` with the
+`hd` custom parameter so the trigger can stay a custom-styled GlassButton;
+mobile uses the `google_sign_in` plugin's native flow — both paths do the
+real post-signin email check and sign back out on a domain mismatch, since
+the `hd` hint is a UX filter only, not a security boundary), password
+reset, sign out, and `fetchRole(uid)` reading `users/{uid}.role`.
+`lib/screens/auth_gate.dart` is the real access gate: routes to
+FacultyHomeScreen or AdminHomeScreen (both placeholders — real dashboards
+are Phase 4/11) based purely on the Firestore role, independent of which
+tab was selected on the login screen; an authenticated user with no
+`users/{uid}` document is signed out and shown "This account isn't
+registered." `lib/screens/login_screen.dart` (reference 01) and
+`forgot_password_screen.dart` (reference 02) built from the Phase 1 widget
+library — extended `GlassButton` with an optional leading icon and a
+loading spinner state rather than one-off styling, and added
+`CfmsTextField`/`CfmsTextFieldGroup` as new shared widgets for the
+`.inputs`/`.inp` pattern. `main.dart` now boots straight into `AuthGate`;
+the Phase 1 debug component gallery is no longer wired in (file still
+exists, just unreachable, per Phase 1's own "hide once Phase 2 starts").
+
+**Two seeded test accounts** (Firebase Auth + matching `users/{uid}` doc),
+so there's something to actually log in with — Phase 11 (Admin — Manage
+Users) is real account creation, this is just enough to test Phase 2:
+
+| Role  | Email                     | Password      |
+|-------|---------------------------|---------------|
+| Faculty | faculty.test@bmu.edu.in | `Faculty#2026` |
+| Admin   | admin.test@bmu.edu.in   | `Admin#2026`   |
+
+Verified end-to-end on web: email/password sign-in → Firestore role fetch
+→ routed to the Faculty placeholder → Log out → back to Login.
+
+**Open follow-ups / things to check:**
+- **Google sign-in couldn't be tested end-to-end here** — it needs a real
+  interactive Google consent flow, which isn't possible from this
+  environment. Please try "Continue with Google" yourself with a real
+  @bmu.edu.in Google Workspace account (and, separately, a non-BMU Google
+  account to confirm it's rejected) before we call this phase fully done.
+- **Firestore is still on the temporary open rule from Phase 0**
+  (`allow read, write: if request.time < ...`, expires 2026-10-22) — that's
+  what let `fetchRole` work before Phase 3 writes the real least-privilege
+  rules. Deployed as-is; Phase 3 must replace it before that expiry.
+- The login/reset-password sticker illustrations are simplified
+  placeholders (a plain folder icon in a brand-gradient rounded square),
+  not pixel-accurate redraws of the reference SVGs — flagged as a separate
+  illustration-asset task, not core to the auth wiring in this phase.
+- Added two more dependencies beyond Phase 1's google_fonts: `firebase_auth`,
+  `cloud_firestore`, `google_sign_in` (all already implied by CLAUDE.md's
+  tech stack), and `flutter_svg` (renders the exact multicolour Google "G"
+  logo from the reference instead of an approximation).
+
+---
+
+## Phase 3 — Data model + security rules: not started
