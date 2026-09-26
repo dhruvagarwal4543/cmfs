@@ -1,5 +1,7 @@
 # cfms
 
+[![CI](https://github.com/dhruvagarwal4543/cmfs/actions/workflows/ci.yml/badge.svg)](https://github.com/dhruvagarwal4543/cmfs/actions/workflows/ci.yml)
+
 Course File Manager for BMU
 
 ## Getting Started

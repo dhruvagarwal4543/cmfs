@@ -184,4 +184,19 @@ screen reads them yet, so nothing breaks today):
 
 ---
 
+## Housekeeping — CI (2026-09-26)
+
+Not a phase — added `.github/workflows/ci.yml`: on every push/PR to `main`,
+checks out, sets up Flutter 3.47.2 stable (matching the local environment
+and `pubspec.yaml`'s `sdk: ^3.13.2`), runs `flutter pub get`, `flutter
+analyze`, and `flutter test`. Either failing fails the workflow. No
+build/deploy step and no platform matrix, by design — just a fast
+correctness gate. Added a one-line CI badge to the existing `README.md`.
+
+**What to check:** the badge/workflow will go green (or show its first
+real result) once this commit is pushed and Actions runs — worth a glance
+at the Actions tab after pushing to confirm it actually passes.
+
+---
+
 ## Phase 4 — Faculty core: course files list + creation: not started
