@@ -1,18 +1,92 @@
-rules_version='2'
+rules_version = '2';
 
+// CLAUDE.md §4 — implements exactly the rules specified there:
+//   - Faculty can read/write only courseFiles where facultyUid == their uid.
+//   - Administrator can read all courseFiles/courses/users; can write
+//     departments/*, courses/*, users/*. Administrator never writes
+//     courseFiles — CLAUDE.md §1: admin doesn't approve/edit course files.
+//   - No user can edit their own role field, ever — including their own
+//     Administrator account.
+//   - A courseFile's fields become read-only once status is ready/archived,
+//     except generatedFile — that's written only by the future Cloud Run
+//     service via a service-account (Admin SDK bypasses these rules
+//     entirely), so client rules simply never grant write on it, at any
+//     status.
+//
+// Anything not explicitly covered by a §4 bullet (departments/courses read
+// access for faculty, the courseFiles subcollections, notifications) is
+// intentionally left at Firestore's default-deny until the phase that
+// actually needs it defines real rules — see PROGRESS.md's Phase 3 entry.
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      // This rule allows anyone with your database reference to view, edit,
-      // and delete all data in your database. It is useful for getting
-      // started, but it is configured to expire after 30 days because it
-      // leaves your app open to attackers. At that time, all client
-      // requests to your database will be denied.
-      //
-      // Make sure to write security rules for your app before that time, or
-      // else all client requests to your database will be denied until you
-      // update your rules.
-      allow read, write: if request.time < timestamp.date(2026, 10, 22);
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    // Cheap checks (isSelf) must be tried first in every `||` below so this
+    // never has to run — reading your own /users doc must never depend on
+    // a /users doc lookup succeeding.
+    function isAdmin() {
+      return isSignedIn() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // users/{uid}
+    // Self-read isn't a separate §4 bullet, but Phase 2's login/role routing
+    // (and this phase's own "faculty editing their own role" test) requires
+    // every signed-in user to be able to read and partially update their own
+    // doc — just never the role field.
+    match /users/{uid} {
+      allow read: if isSelf(uid) || isAdmin();
+
+      allow update: if
+        (isSelf(uid) && request.resource.data.role == resource.data.role) ||
+        (isAdmin() && request.auth.uid != uid);
+
+      allow create, delete: if isAdmin() && request.auth.uid != uid;
+    }
+
+    // departments/{deptId} — admin write only, per §4. No read grant is
+    // specified for anyone else yet.
+    match /departments/{deptId} {
+      allow read, write: if isAdmin();
+    }
+
+    // courses/{courseId} — admin read/write, per §4. Faculty access to
+    // their own courses isn't specified yet and isn't needed by any screen
+    // until Phase 4.
+    match /courses/{courseId} {
+      allow read, write: if isAdmin();
+    }
+
+    // courseFiles/{fileId}
+    match /courseFiles/{fileId} {
+      function isOwner() {
+        return isSignedIn() && resource.data.facultyUid == request.auth.uid;
+      }
+
+      function isLocked() {
+        return resource.data.status in ['ready', 'archived'];
+      }
+
+      function generatedFileUnchanged() {
+        return request.resource.data.get('generatedFile', null) ==
+          resource.data.get('generatedFile', null);
+      }
+
+      allow read: if isOwner() || isAdmin();
+
+      allow create: if isSignedIn() &&
+        request.resource.data.facultyUid == request.auth.uid;
+
+      allow update: if isOwner() && !isLocked() && generatedFileUnchanged();
+
+      allow delete: if isOwner() && !isLocked();
     }
   }
 }
